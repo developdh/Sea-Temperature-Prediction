@@ -18,67 +18,27 @@ ocean_current_data_uo_surface = xr.open_dataset('_data/_ocean_current_data_uo_su
 temperature_data = xr.open_dataset('_data/_temperature_data.nc')
 psl_data = xr.open_dataset('_data/_psl_data.nc')
 
-# print(ocean_current_data_vo_surface['time'].shape)
-
-# ocean_current_data_vo_surface['vo'].isel(time=0).plot()
-# plt.show()
-# ocean_current_data_uo_surface['uo'].isel(time=0).plot()
-# plt.show()
-# temperature_data['tos'].isel(time=0).plot()
-# plt.show()
-# psl_data['psl'].isel(time=0).plot()
-# plt.show()
-
 avg_ocean_current_data_vo_surface = ocean_current_data_vo_surface.mean(dim=('lat', 'lon'))
 avg_ocean_current_data_uo_surface = ocean_current_data_uo_surface.mean(dim=('lat', 'lon'))
 avg_psl_data = psl_data.mean(dim=('lat', 'lon'))
 avg_temperature_data = temperature_data.mean(dim=('lat', 'lon'))
 
-# avg_ocean_current_data_vo_surface['vo'].plot()
-# plt.show()
-# avg_ocean_current_data_uo_surface['uo'].plot()
-# plt.show()
-# avg_psl_data['psl'].plot()
-# plt.show()
-# avg_temperature_data['tos'].plot()
-# plt.show()
-
 mean_avg_ocean_current_data_vo_surface = avg_ocean_current_data_vo_surface.mean(dim='time')
 sd_avg_ocean_current_data_vo_surface = avg_ocean_current_data_vo_surface.std(dim='time')
-# print(mean_avg_ocean_current_data_vo_surface)
-# print(sd_avg_ocean_current_data_vo_surface)
 
 mean_avg_ocean_current_data_uo_surface = avg_ocean_current_data_uo_surface.mean(dim='time')
 sd_avg_ocean_current_data_uo_surface = avg_ocean_current_data_uo_surface.std(dim='time')
-# print(mean_avg_ocean_current_data_uo_surface)
-# print(sd_avg_ocean_current_data_uo_surface)
 
 mean_avg_psl_data = avg_psl_data.mean(dim='time')
 sd_avg_psl_data = avg_psl_data.std(dim='time')
-# print(mean_avg_psl_data)
-# print(sd_avg_psl_data)
 
 mean_avg_temperature_data = avg_temperature_data.mean(dim='time')
 sd_avg_temperature_data = avg_temperature_data.std(dim='time')
-# print(mean_avg_temperature_data)
-# print(sd_avg_temperature_data)
 
 avg_ocean_current_data_vo_surface_normalized = (avg_ocean_current_data_vo_surface - mean_avg_ocean_current_data_vo_surface) / sd_avg_ocean_current_data_vo_surface
 avg_ocean_current_data_uo_surface_normalized = (avg_ocean_current_data_uo_surface - mean_avg_ocean_current_data_uo_surface) / sd_avg_ocean_current_data_uo_surface
 avg_psl_data_normalized = (avg_psl_data - mean_avg_psl_data) / sd_avg_psl_data
 avg_temperature_data_normalized = (avg_temperature_data - mean_avg_temperature_data) / sd_avg_temperature_data
-
-# avg_ocean_current_data_vo_surface['vo'].plot()
-# plt.show()
-# avg_ocean_current_data_vo_surface_normalized['vo'].plot()
-# # plt.legend()
-# plt.show()
-
-# print(avg_ocean_current_data_uo_surface_normalized.dims)
-# print(avg_ocean_current_data_vo_surface_normalized.dims)
-# print(avg_psl_data_normalized.dims)
-# print(avg_temperature_data_normalized.dims)
-
 
 # Step 3: Prepare the data for training
 X = pd.concat([avg_ocean_current_data_vo_surface_normalized['vo'].to_dataframe(), avg_ocean_current_data_uo_surface_normalized['uo'].to_dataframe(), avg_psl_data_normalized['psl'].to_dataframe()], axis=1)
@@ -195,3 +155,17 @@ plt.xlabel('Sample')
 plt.ylabel('Normalized Temperature')
 plt.legend()
 plt.show()
+
+
+#RESULTS
+
+# Step 24: Compare the performance of the models
+models = ['Random Forest', 'MLP', 'XGBoost', 'TensorFlow']
+mse_scores = [mse, mse_mlp, mse_xgb, mse_tf]
+
+best_model_index = mse_scores.index(min(mse_scores))
+best_model = models[best_model_index]
+best_mse = mse_scores[best_model_index]
+
+print("Best Model:", best_model)
+print("Best Mean Squared Error:", best_mse)
