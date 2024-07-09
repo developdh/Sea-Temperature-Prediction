@@ -18,6 +18,8 @@ ocean_current_data_uo_surface = xr.open_dataset('_data/_ocean_current_data_uo_su
 temperature_data = xr.open_dataset('_data/_temperature_data.nc')
 psl_data = xr.open_dataset('_data/_psl_data.nc')
 
+# Step 3: Prepare the data for training
+
 avg_ocean_current_data_vo_surface = ocean_current_data_vo_surface.mean(dim=('lat', 'lon'))
 avg_ocean_current_data_uo_surface = ocean_current_data_uo_surface.mean(dim=('lat', 'lon'))
 avg_psl_data = psl_data.mean(dim=('lat', 'lon'))
@@ -40,7 +42,6 @@ avg_ocean_current_data_uo_surface_normalized = (avg_ocean_current_data_uo_surfac
 avg_psl_data_normalized = (avg_psl_data - mean_avg_psl_data) / sd_avg_psl_data
 avg_temperature_data_normalized = (avg_temperature_data - mean_avg_temperature_data) / sd_avg_temperature_data
 
-# Step 3: Prepare the data for training
 X = pd.concat([avg_ocean_current_data_vo_surface_normalized['vo'].to_dataframe(), avg_ocean_current_data_uo_surface_normalized['uo'].to_dataframe(), avg_psl_data_normalized['psl'].to_dataframe()], axis=1)
 X = X.apply(pd.to_numeric).fillna(0)
 
