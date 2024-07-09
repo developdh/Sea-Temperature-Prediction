@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import netCDF4
 import nc_time_axis
 import xgboost as xgb
+import tensorflow as tf
 
 # Step 2: Load the netCDF datasets
 
@@ -153,6 +154,43 @@ print("Mean Squared Error (XGBoost):", mse_xgb)
 # Step 16: Visualize the predicted values and the actual values for XGBoost model
 plt.plot(y_test.values, label='Actual')
 plt.plot(y_pred_xgb, label='Predicted (XGBoost)')
+plt.xlabel('Sample')
+plt.ylabel('Normalized Temperature')
+plt.legend()
+plt.show()
+
+
+#TENSORFLOW REGRESSOR
+
+# Step 17: Convert the data to TensorFlow tensors
+X_train_tf = tf.convert_to_tensor(X_train.values, dtype=tf.float32)
+y_train_tf = tf.convert_to_tensor(y_train.values, dtype=tf.float32)
+X_test_tf = tf.convert_to_tensor(X_test.values, dtype=tf.float32)
+y_test_tf = tf.convert_to_tensor(y_test.values, dtype=tf.float32)
+
+# Step 18: Define the TensorFlow model
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+# Step 19: Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Step 20: Train the model
+model.fit(X_train_tf, y_train_tf, epochs=10, batch_size=32)
+
+# Step 21: Evaluate the model
+mse_tf = model.evaluate(X_test_tf, y_test_tf)
+print("Mean Squared Error (TensorFlow):", mse_tf)
+
+# Step 22: Make predictions on the test set
+y_pred_tf = model.predict(X_test_tf)
+
+# Step 23: Visualize the predicted values and the actual values for TensorFlow model
+plt.plot(y_test.values, label='Actual')
+plt.plot(y_pred_tf, label='Predicted (TensorFlow)')
 plt.xlabel('Sample')
 plt.ylabel('Normalized Temperature')
 plt.legend()
