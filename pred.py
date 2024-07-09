@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import netCDF4
 import nc_time_axis
+import xgboost as xgb
 
 # Step 2: Load the netCDF datasets
 
@@ -80,10 +81,18 @@ avg_temperature_data_normalized = (avg_temperature_data - mean_avg_temperature_d
 
 # Step 3: Prepare the data for training
 X = pd.concat([avg_ocean_current_data_vo_surface_normalized['vo'].to_dataframe(), avg_ocean_current_data_uo_surface_normalized['uo'].to_dataframe(), avg_psl_data_normalized['psl'].to_dataframe()], axis=1)
+X = X.apply(pd.to_numeric).fillna(0)
+
+print(X)
+
 y = avg_temperature_data_normalized['tos']
 
 # Step 4: Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+
+#RANDOM FOREST REGRESSOR
 
 # Step 5: Train the random forest regressor model
 rf_model = RandomForestRegressor()
@@ -104,17 +113,46 @@ plt.ylabel('Normalized Temperature')
 plt.legend()
 plt.show()
 
-# Step 9: Train the neural network model
-nn_model = MLPRegressor()
-nn_model.fit(X_train, y_train)
+
+
+#MLP REGRESSOR
+
+# Step 9: Train the MLP regressor model
+mlp_model = MLPRegressor()
+mlp_model.fit(X_train, y_train)
+
 # Step 10: Make predictions on the test set
-y_pred_nn = nn_model.predict(X_test)
+y_pred_mlp = mlp_model.predict(X_test)
+
 # Step 11: Evaluate the model
-mse_nn = mean_squared_error(y_test, y_pred_nn)
-print("Mean Squared Error (Neural Network):", mse_nn)
-# Step 12: Visualize the predicted values and the actual values
+mse_mlp = mean_squared_error(y_test, y_pred_mlp)
+print("Mean Squared Error (MLP):", mse_mlp)
+
+# Step 12: Visualize the predicted values and the actual values for MLP model
 plt.plot(y_test, label='Actual')
-plt.plot(y_pred_nn, label='Predicted (Neural Network)')
+plt.plot(y_pred_mlp, label='Predicted (MLP)')
+plt.xlabel('Sample')
+plt.ylabel('Normalized Temperature')
+plt.legend()
+plt.show()
+
+
+# XGBoost REGRESSOR
+
+# Step 13: Train the XGBoost regressor model
+xgb_model = xgb.XGBRegressor()
+xgb_model.fit(X_train.values, y_train.values)
+
+# Step 14: Make predictions on the test set
+y_pred_xgb = xgb_model.predict(X_test.values)
+
+# Step 15: Evaluate the model
+mse_xgb = mean_squared_error(y_test.values, y_pred_xgb)
+print("Mean Squared Error (XGBoost):", mse_xgb)
+
+# Step 16: Visualize the predicted values and the actual values for XGBoost model
+plt.plot(y_test.values, label='Actual')
+plt.plot(y_pred_xgb, label='Predicted (XGBoost)')
 plt.xlabel('Sample')
 plt.ylabel('Normalized Temperature')
 plt.legend()
