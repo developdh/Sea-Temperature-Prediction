@@ -1,3 +1,5 @@
 _data/
 data/
+local_model/
+glob_model/
 IMERG_run.py

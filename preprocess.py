@@ -30,8 +30,8 @@ psl_data_20012014 = xr.open_dataset('data/psl_Amon_GISS-E2-1-G_historical_r101i1
 temperature_data = xr.merge([tos_data_19512000['tos'], tos_data_20012014['tos']])
 
 # Merge the ocean current datasets
-ocean_current_data_vo = xr.merge([vo_data_19711990['vo'], vo_data_19912010['vo'], vo_data_20112014['vo']])
-ocean_current_data_uo = xr.merge([uo_data_19711990['uo'], uo_data_19912010['uo'], uo_data_20112014['uo']])
+ocean_current_data_vo = xr.merge([vo_data_19511970['vo'],vo_data_19711990['vo'], vo_data_19912010['vo'], vo_data_20112014['vo']])
+ocean_current_data_uo = xr.merge([vo_data_19511970['vo'],uo_data_19711990['uo'], uo_data_19912010['uo'], uo_data_20112014['uo']])
 
 # Merge the sea level pressure datasets
 psl_data = xr.merge([psl_data_19512000['psl'], psl_data_20012014['psl']])
