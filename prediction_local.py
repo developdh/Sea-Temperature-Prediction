@@ -9,7 +9,6 @@ import nc_time_axis
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 # Step 2: Load the netCDF datasets
 ocean_current_data_vo_surface = xr.open_dataset('_data/_ocean_current_data_vo_surface.nc')
 ocean_current_data_uo_surface = xr.open_dataset('_data/_ocean_current_data_uo_surface.nc')
@@ -64,27 +63,40 @@ for i in range(len(y_train_list)):
     mse = mean_squared_error(y_test_list[i], y_pred_list[i])
     mse_list.append(mse)
 
-# Step 7: combine the lat*lon points into a single dataset and visualize the results
+# Step 7: Combine the lat*lon points into a single dataset and visualize the results
+lat_dim = target.shape[1]
+lon_dim = target.shape[2]
+time_dim = target.shape[0]  # Assuming the first dimension is time
+
+# Initialize empty arrays to store combined results
+predicted_temp_combined = np.zeros((time_dim, lat_dim, lon_dim))
+actual_temp_combined = np.zeros((time_dim, lat_dim, lon_dim))
+
+index = 0
+for lat in range(lat_dim):
+    for lon in range(lon_dim):
+        # Make sure to only assign the predictions for the available time points
+        available_time_points = len(y_pred_list[index])
+        predicted_temp_combined[:available_time_points, lat, lon] = y_pred_list[index]
+        actual_temp_combined[:available_time_points, lat, lon] = y_test_list[index]
+        index += 1
+
 combined_results = xr.Dataset(
     {
-        "predicted_temperature": (("lat", "lon"), np.concatenate(y_pred_list)),
-        "actual_temperature": (("lat", "lon"), np.concatenate(y_test_list)),
-        # "mse": (("lat", "lon"), mse_list),
+        "predicted_temperature": (("time", "lat", "lon"), predicted_temp_combined),
+        "actual_temperature": (("time", "lat", "lon"), actual_temp_combined),
     },
     coords={
+        "time": target.time.values,
         "lat": target.lat.values,
         "lon": target.lon.values,
     },
 )
 
-# Convert numpy arrays to DataArrays
-combined_results["predicted_temperature"] = xr.DataArray(combined_results["predicted_temperature"], dims=("lat", "lon"))
-combined_results["actual_temperature"] = xr.DataArray(combined_results["actual_temperature"], dims=("lat", "lon"))
-
 # Visualize the results
 fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 8))
-combined_results["predicted_temperature"].plot(ax=axes[0])
-combined_results["actual_temperature"].plot(ax=axes[1])
+combined_results["predicted_temperature"].isel(time=0).plot(ax=axes[0])
+combined_results["actual_temperature"].isel(time=0).plot(ax=axes[1])
 axes[0].set_title("Predicted Temperature")
 axes[1].set_title("Actual Temperature")
 plt.tight_layout()
