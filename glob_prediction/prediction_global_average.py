@@ -29,7 +29,7 @@ def plot_data():
     psl_data['psl'].isel(time=0).plot()
     plt.show()
 
-plot_data()
+# plot_data()
 
 # Step 3: Prepare the data for training
 
@@ -83,7 +83,7 @@ def plot_normalized_data():
     plt.ylabel('Normalized Temperature')
     plt.show()
 
-plot_normalized_data()
+# plot_normalized_data()
 
 
 # Step 4: Split the data into training and testing sets
@@ -91,10 +91,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 
 
 # global variables: Mean Squared Error
-mse = 0
+mse_rf = 0
 mse_mlp = 0
 mse_xgb = 0
 mse_tf = 0
+
 
 #RANDOM FOREST REGRESSOR
 
@@ -107,8 +108,8 @@ def randomforest():
     y_pred = rf_model.predict(X_test)
 
     # Step 7: Evaluate the model
-    mse = mean_squared_error(y_test, y_pred)
-    print("Mean Squared Error:", mse)
+    mse_rf = mean_squared_error(y_test, y_pred)
+    print("Mean Squared Error (Random Forsest):", mse_rf)
 
     # Step 8: Visualize the predicted values and the actual values
     plt.plot(y_test, label='Actual')
@@ -216,7 +217,7 @@ tensorflow()
 
 # Step 24: Compare the performance of the models
 models = ['Random Forest', 'MLP', 'XGBoost', 'TensorFlow']
-mse_scores = [mse, mse_mlp, mse_xgb, mse_tf]
+mse_scores = [mse_rf, mse_mlp, mse_xgb, mse_tf]
 
 best_model_index = mse_scores.index(min(mse_scores))
 best_model = models[best_model_index]
