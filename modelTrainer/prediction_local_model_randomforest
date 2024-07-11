@@ -6,6 +6,7 @@ import joblib
 import pandas as pd
 import pickle
 import nc_time_axis
+from scipy.ndimage import gaussian_filter
 import matplotlib.pyplot as plt
 
 
@@ -39,13 +40,14 @@ for lat in range(target.shape[1]):
         y_train_list.append(y_train)
         y_test_list.append(y_test)
 
-# Step 4: Train the model for each lat*lon point, using gaussian process regressions
+# Step 4: Train the model for each lat*lon point
+
 models = []
 
 for i in range(len(X_train_list)):
+    X_train_smooth = gaussian_filter(X_train_list[i], sigma=1)  # Apply Gaussian filter to the training data
     model = RandomForestRegressor()
-    model.fit(X_train_list[i], y_train_list[i])
-    models.append(model)
+    model.fit(X_train_smooth, y_train_list[i])
 
 
 with open("local_model/randomforest.pckl", "wb") as f:

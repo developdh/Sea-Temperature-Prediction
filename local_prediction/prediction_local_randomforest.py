@@ -62,12 +62,16 @@ combined_results = xr.Dataset(
 
 # Print Mean Squared Error for reference
 print("Mean Squared Error List:", mse_list)
+
 # Visualize the results for each time period
 for t in range(combined_results["time"].shape[0]):
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 8))
-    combined_results["predicted_temperature"].isel(time=t).plot(ax=axes[0], vmin=-20, vmax=40, cmap='coolwarm')
-    combined_results["actual_temperature"].isel(time=t).plot(ax=axes[1], vmin=-20, vmax=40, cmap='coolwarm')
+    fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 12))
+    combined_results["predicted_temperature"].isel(time=t).plot(ax=axes[0], vmin=-35, vmax=35, cmap='coolwarm')
+    combined_results["actual_temperature"].isel(time=t).plot(ax=axes[1], vmin=-35, vmax=35, cmap='coolwarm')
+    difference = combined_results["predicted_temperature"].isel(time=t) - combined_results["actual_temperature"].isel(time=t)
+    difference.plot(ax=axes[2], vmin=-5, vmax=5, cmap='coolwarm')
     axes[0].set_title(f"Predicted Temperature at time={t}")
     axes[1].set_title(f"Actual Temperature at time={t}")
+    axes[2].set_title(f"Difference (Predicted - Actual) at time={t}")
     plt.tight_layout()
     plt.show()

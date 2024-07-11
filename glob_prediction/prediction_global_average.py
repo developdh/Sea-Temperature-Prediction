@@ -12,6 +12,7 @@ import nc_time_axis
 import xgboost as xgb
 import tensorflow as tf
 import warnings
+import pandas as pd
 
 warnings.filterwarnings('ignore')
 
@@ -226,19 +227,6 @@ def result():
     best_mse = mse_scores[best_model_index]
 
     print("Best Model:", best_model)
-    print("Best Mean Squared Error:", best_mse)
 
 
 result()
-
-
-
-# for i in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75]:
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=i, random_state=42)
-#     randomforest()
-#     mlp()
-#     xgboost()
-#     tensorflow()
-#     result()
-#     print("Test Size:", i)
-#     print("--------------------------------------------------")
