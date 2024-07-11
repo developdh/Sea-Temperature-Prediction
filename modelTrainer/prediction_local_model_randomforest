@@ -39,7 +39,7 @@ for lat in range(target.shape[1]):
         y_train_list.append(y_train)
         y_test_list.append(y_test)
 
-# Step 4: Train the model for each lat*lon point
+# Step 4: Train the model for each lat*lon point, using gaussian process regressions
 models = []
 
 for i in range(len(X_train_list)):

@@ -11,6 +11,9 @@ import netCDF4
 import nc_time_axis
 import xgboost as xgb
 import tensorflow as tf
+import warnings
+
+warnings.filterwarnings('ignore')
 
 # Step 2: Load the netCDF datasets
 
@@ -87,7 +90,7 @@ def plot_normalized_data():
 
 
 # Step 4: Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
 
 
 # global variables: Mean Squared Error
@@ -118,9 +121,6 @@ def randomforest():
     plt.ylabel('Normalized Temperature')
     plt.legend()
     plt.show()
-
-    with open("glob_model/randomforest.pckl", "wb") as f:
-        pickle.dump(rf_model, f)
 
 
 
@@ -190,7 +190,7 @@ def tensorflow():
     model.compile(optimizer='adam', loss='mean_squared_error')
 
     # Step 20: Train the model
-    model.fit(X_train_tf, y_train_tf, epochs=10, batch_size=32)
+    model.fit(X_train_tf, y_train_tf, epochs=10, batch_size=32, verbose=0)
 
     # Step 21: Evaluate the model
     mse_tf = model.evaluate(X_test_tf, y_test_tf)
@@ -216,12 +216,29 @@ tensorflow()
 #RESULTS
 
 # Step 24: Compare the performance of the models
-models = ['Random Forest', 'MLP', 'XGBoost', 'TensorFlow']
-mse_scores = [mse_rf, mse_mlp, mse_xgb, mse_tf]
 
-best_model_index = mse_scores.index(min(mse_scores))
-best_model = models[best_model_index]
-best_mse = mse_scores[best_model_index]
+def result():
+    models = ['Random Forest', 'MLP', 'XGBoost', 'TensorFlow']
+    mse_scores = [mse_rf, mse_mlp, mse_xgb, mse_tf]
 
-print("Best Model:", best_model)
-print("Best Mean Squared Error:", best_mse)
+    best_model_index = mse_scores.index(min(mse_scores))
+    best_model = models[best_model_index]
+    best_mse = mse_scores[best_model_index]
+
+    print("Best Model:", best_model)
+    print("Best Mean Squared Error:", best_mse)
+
+
+result()
+
+
+
+# for i in [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75]:
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=i, random_state=42)
+#     randomforest()
+#     mlp()
+#     xgboost()
+#     tensorflow()
+#     result()
+#     print("Test Size:", i)
+#     print("--------------------------------------------------")
