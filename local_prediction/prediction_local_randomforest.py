@@ -2,8 +2,8 @@ import xarray as xr
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
 import pandas as pd
-import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -20,12 +20,16 @@ features = pd.concat([ocean_current_data_vo_surface.to_dataframe().reset_index(d
                       psl_data.to_dataframe().reset_index(drop=True)], axis=1)
 features = features[:768]  # Limit the number of samples to match the target variable
 
-# Extract the target variable
-target = temperature_data['tos']
+# Extract the target variable and limit to the same number of samples
+target = temperature_data['tos'].isel(time=slice(0, 768))
 
-# Initialize lists to store the combined results
-predicted_temp_combined = np.zeros((target.shape[0], target.shape[1], target.shape[2]))
-actual_temp_combined = np.zeros((target.shape[0], target.shape[1], target.shape[2]))
+# Normalize the features and the target
+scaler_X = StandardScaler()
+features_normalized = scaler_X.fit_transform(features)
+
+# Initialize arrays to store the combined results
+predicted_temp_combined = np.zeros_like(target.values)
+actual_temp_combined = target.values.copy()
 
 # Split the data into training and testing sets for each lat*lon point and train models
 rf_models = []
@@ -33,7 +37,11 @@ mse_list = []
 
 for lat in range(target.shape[1]):
     for lon in range(target.shape[2]):
-        X_train, X_test, y_train, y_test = train_test_split(features.values, target.values[:, lat, lon], test_size=0.2, random_state=42)
+        y = target.values[:, lat, lon].reshape(-1, 1)
+        scaler_y = StandardScaler()
+        y_normalized = scaler_y.fit_transform(y).flatten()
+
+        X_train, X_test, y_train, y_test = train_test_split(features_normalized, y_normalized, test_size=0.2, random_state=42)
 
         model = RandomForestRegressor(n_estimators=100, random_state=42)
         model.fit(X_train, y_train)
@@ -43,9 +51,10 @@ for lat in range(target.shape[1]):
         mse_list.append(mse)
         
         # Predict on the entire dataset for visualization purposes
-        y_full_pred = model.predict(features.values)
+        y_full_pred_normalized = model.predict(features_normalized)
+        y_full_pred = scaler_y.inverse_transform(y_full_pred_normalized.reshape(-1, 1)).flatten()
+
         predicted_temp_combined[:, lat, lon] = y_full_pred
-        actual_temp_combined[:, lat, lon] = target.values[:, lat, lon]
 
 # Combine the results into a single dataset
 combined_results = xr.Dataset(
@@ -63,11 +72,26 @@ combined_results = xr.Dataset(
 # Print Mean Squared Error for reference
 print("Mean Squared Error List:", mse_list)
 
+# Calculate and plot the average over the entire time period
+average_predicted_temp = combined_results["predicted_temperature"].mean(dim="time")
+average_actual_temp = combined_results["actual_temperature"].mean(dim="time")
+average_difference = average_predicted_temp - average_actual_temp
+
+fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 12))
+average_predicted_temp.plot(ax=axes[0], vmin=0, vmax=35, cmap='coolwarm')
+average_actual_temp.plot(ax=axes[1], vmin=0, vmax=35, cmap='coolwarm')
+average_difference.plot(ax=axes[2], vmin=-5, vmax=5, cmap='coolwarm')
+axes[0].set_title("Average Predicted Temperature")
+axes[1].set_title("Average Actual Temperature")
+axes[2].set_title("Average Difference (Predicted - Actual)")
+plt.tight_layout()
+plt.show()
+
 # Visualize the results for each time period
 for t in range(combined_results["time"].shape[0]):
     fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 12))
-    combined_results["predicted_temperature"].isel(time=t).plot(ax=axes[0], vmin=-35, vmax=35, cmap='coolwarm')
-    combined_results["actual_temperature"].isel(time=t).plot(ax=axes[1], vmin=-35, vmax=35, cmap='coolwarm')
+    combined_results["predicted_temperature"].isel(time=t).plot(ax=axes[0], vmin=0, vmax=35, cmap='coolwarm')
+    combined_results["actual_temperature"].isel(time=t).plot(ax=axes[1], vmin=0, vmax=35, cmap='coolwarm')
     difference = combined_results["predicted_temperature"].isel(time=t) - combined_results["actual_temperature"].isel(time=t)
     difference.plot(ax=axes[2], vmin=-5, vmax=5, cmap='coolwarm')
     axes[0].set_title(f"Predicted Temperature at time={t}")
